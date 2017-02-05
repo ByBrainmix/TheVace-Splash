@@ -42,7 +42,7 @@ public class GameOptionsListener implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-
+        if(event.getDamager() instanceof Player) event.setCancelled(true);
         switch (event.getEntityType()) {
             case ITEM_FRAME:
             case MINECART:
