@@ -1,0 +1,5 @@
+name: Splash
+version: 1.0
+author: Brainmix
+main: me.brainmix.splash.Splash
+depend: [General]
