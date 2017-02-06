@@ -17,6 +17,7 @@ public abstract class CustomSplashItem extends CustomItem {
         getOptions().setInteractWithOthers(true);
         getOptions().setMove(false);
         getOptions().setDrop(false);
+        getOptions().setCancellDefaults(true);
     }
 
     protected String getPath() {
