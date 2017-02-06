@@ -20,6 +20,7 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
     private SplashTeam team1;
     private SplashTeam team2;
     private int timeleft;
+    private int gameLoop;
 
     public static Splash a() {
         return (Splash) GameApi.getCurrent();
@@ -58,6 +59,7 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
         team2 = getTeams().stream().filter(m -> m.getName().equals("blue")).findFirst().orElse(null);
 
         ItemRegister  itemRegister = new ItemRegister(this);
+        itemRegister.registerAll(SplashItem.class);
         timeleft = getGameConfig().getInt("Settings.gametime", 3600);
     }
 
@@ -75,22 +77,25 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
 
     @Override
     public void onStart() {
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+        gameLoop = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             display();
             if(timeleft == 0) onEnd();
             else timeleft--;
             if(timeleft % 20 == 0) {
                 getPlayers().forEach(SplashPlayer::updateDisplayName);
             }
+            getPlayers().forEach(SplashPlayer::onUpdate);
         }, 0, 0);
     }
 
     public void onEnd() {
+        Bukkit.getScheduler().cancelTask(gameLoop);
         if(team1.getPercentage() == team2.getPercentage()) {
             noTeamWins();
         } else {
             teamWins(team1.getPercentage() > team2.getPercentage() ? team1 : team2);
         }
+
     }
 
     private void noTeamWins() {
@@ -116,6 +121,7 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
 
     @Override
     public Class<SplashMap> getMapClass() {
+
         return SplashMap.class;
     }
 

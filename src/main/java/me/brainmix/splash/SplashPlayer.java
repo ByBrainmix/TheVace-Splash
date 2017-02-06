@@ -2,9 +2,16 @@ package me.brainmix.splash;
 
 import com.google.common.collect.Lists;
 import me.brainmix.itemapi.api.utils.ItemUtils;
+import me.brainmix.splash.utils.BParticle;
+import me.brainmix.splash.utils.ColoredBlock;
 import me.vicevice.general.api.games.AbstractPlayer;
 import me.vicevice.general.api.games.interfaces.ManageableGame;
 import me.vicevice.general.api.games.utils.BScoreboard;
+import me.vicevice.general.api.games.utils.ParticleEffect;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
 
@@ -12,6 +19,7 @@ public class SplashPlayer extends AbstractPlayer {
 
     private Splash game;
     private BScoreboard ingameBoard;
+    private boolean invisible;
 
     public SplashPlayer(String name, ManageableGame game) {
         super(name, game);
@@ -24,6 +32,31 @@ public class SplashPlayer extends AbstractPlayer {
         ingameBoard = new BScoreboard("splash", game.getMessagesConfig().getTranslated("IngameBoard.displayName", getPlayer(), "display"));
         updateIngameboard();
         ingameBoard.setBoard(getPlayer());
+
+        PlayerInventory inv = getPlayer().getInventory();
+        inv.addItem(SplashItem.TEST_ITEM.get());
+
+    }
+
+    public void onUpdate() {
+        ColoredBlock block = game.getCurrent().getBlockAt(getPlayer().getLocation().add(0, -1, 0));
+
+        // sneaking over own colored block
+        if(block != null && block.hasTeam() && block.getTeam() == getTeam() && getPlayer().isSneaking()) {
+            if(!isInvisible()) setInvisible();
+            getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 40, 40, false, false));
+            BParticle.BLOCK_CRACK.playAll(getPlayer().getLocation(), true, 0.2, 0.4, 0.2, 0.1f, 10, getTeam().getBlockData().getMaterial().getId(), (int) getTeam().getBlockData().getData());
+        } else {
+            if(isInvisible()) setVisible();
+            getPlayer().removePotionEffect(PotionEffectType.SPEED);
+        }
+
+        // being over other team colored block
+        if(block != null && block.hasTeam() && block.getTeam() != getTeam()) {
+            getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 40, 3, false, false));
+        } else {
+            getPlayer().removePotionEffect(PotionEffectType.SLOW);
+        }
 
     }
 
@@ -61,8 +94,23 @@ public class SplashPlayer extends AbstractPlayer {
         ingameBoard.changeObjectiveName(ItemUtils.format(displayName, "%minutes%", minutes < 10 ? "0" + minutes : minutes + "", "%seconds%", seconds < 10 ? "0" + seconds : seconds + ""));
     }
 
+    public void setInvisible() {
+        Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(getPlayer()));
+        invisible = true;
+    }
+
+    public void setVisible() {
+        Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(getPlayer()));
+        invisible = false;
+    }
+
     @Override
     public SplashTeam getTeam() {
         return (SplashTeam) super.getTeam();
     }
+
+    public boolean isInvisible() {
+        return invisible;
+    }
+
 }

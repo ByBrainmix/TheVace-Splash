@@ -1,4 +1,4 @@
-package me.brainmix.splash.items;
+package me.brainmix.splash.item;
 
 import me.brainmix.itemapi.api.CustomItem;
 import me.brainmix.splash.Splash;
@@ -13,15 +13,14 @@ public abstract class CustomSplashItem extends CustomItem {
 
     public CustomSplashItem(String configName) {
         this.configName = configName;
-        getOptions().setItemStack(config.getItemStack(getPath()));
+        getOptions().setItemStack(config.getItemStack("Items." + configName));
         getOptions().setInteractWithOthers(true);
-        getOptions().setDisabled(true);
         getOptions().setMove(false);
         getOptions().setDrop(false);
     }
 
     protected String getPath() {
-        return "Items." + configName;
+        return "Items." + configName + ".";
     }
 
     protected ItemStack getItemStack() {
