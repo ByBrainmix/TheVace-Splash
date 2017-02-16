@@ -1,5 +1,6 @@
 package me.brainmix.splash;
 
+import me.brainmix.splash.utils.BParticle;
 import me.brainmix.splash.utils.ColoredBlock;
 import me.vicevice.general.api.games.AbstractMap;
 import me.vicevice.general.api.games.interfaces.ManageableGame;
@@ -49,7 +50,10 @@ public class SplashMap extends AbstractMap {
             for(double y = min.getY(); y <= max.getY();  y++) {
                 for(double z = min.getZ(); z <= max.getZ(); z++) {
                     ColoredBlock block = getBlockAt(new Location(min.getWorld(), x, y, z));
-                    if(block != null) block.paint(player);
+                    if(block != null) {
+                        block.paint(player);
+                        player.getTeam().playParticle(min.getWorld().getBlockAt(new Location(min.getWorld(), x, y, z)).getLocation().add(0.5, 0.5, 0.5), 0.25, 0.25, 0.25, 0.1f, 10);
+                    }
                 }
             }
         }
@@ -59,12 +63,20 @@ public class SplashMap extends AbstractMap {
         return coloredBlocks.stream().filter(b -> b.isAtLocation(location)).findFirst().orElse(null);
     }
 
+    public boolean hasBlock(Location location) {
+        return getBlockAt(location) != null;
+    }
+
     public int getColoredBlocksAmount() {
         return coloredBlocks.size();
     }
 
     public int getTeamAmount(SplashTeam team) {
         return (int) coloredBlocks.stream().filter(b -> b.getTeam() == team).count();
+    }
+
+    public void clearMap() {
+        coloredBlocks.forEach(ColoredBlock::clear);
     }
 
     @Override

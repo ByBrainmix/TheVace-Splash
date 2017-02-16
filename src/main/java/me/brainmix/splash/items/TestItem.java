@@ -22,11 +22,18 @@ public class TestItem extends CustomSplashItem implements Clickable {
 
     @ItemHandler
     public void onClick(ItemRightClickBlockEvent event) {
+
+        if(game.getPlayer(event.getPlayer()).getTint() <= 0) return;
+        if(game.getPlayer(event.getPlayer()).isSneaking()) return;
+
         Location middle = event.getBlock().getLocation();
         Location min = new Location(middle.getWorld(), middle.getX() - 2, middle.getY() - 2, middle.getZ() - 2);
         Location max = new Location(middle.getWorld(), middle.getX() + 2, middle.getY() + 2, middle.getZ() + 2);
 
         game.getCurrent().paintArea(game.getPlayer(event.getPlayer()), min, max);
+
+        game.getPlayer(event.getPlayer()).removeTint(2);
+
     }
 
 }

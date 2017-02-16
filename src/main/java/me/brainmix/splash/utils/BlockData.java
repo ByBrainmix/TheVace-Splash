@@ -2,6 +2,7 @@ package me.brainmix.splash.utils;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
 
 public class BlockData {
 
@@ -16,6 +17,10 @@ public class BlockData {
     @SuppressWarnings("deprecation")
     public static BlockData fromBlock(Block block) {
         return new BlockData(block.getType(), block.getData());
+    }
+
+    public ItemStack toItemStack() {
+        return new ItemStack(material, 1, data);
     }
 
     public Material getMaterial() {

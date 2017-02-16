@@ -24,6 +24,10 @@ public abstract class CustomSplashItem extends CustomItem {
         return "Items." + configName + ".";
     }
 
+    public String getConfigName() {
+        return configName;
+    }
+
     protected ItemStack getItemStack() {
         return getOptions().getItemStack();
     }

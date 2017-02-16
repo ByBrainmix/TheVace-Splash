@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import net.minecraft.server.v1_8_R3.EnumParticle;
+import net.minecraft.server.v1_8_R3.PacketPlayOutWorldParticles;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -43,7 +45,7 @@ public enum BParticle {
     }
 
     public void play(Player player, Location location) {
-        play(player, location, false, 0, 0, 0, 0, 0);
+        play(player, location, true, 0, 0, 0, 0, 0);
     }
     public void play(Player player, Location location, boolean longDistance) {
         play(player, location, longDistance, 0, 0, 0, 0, 0);
