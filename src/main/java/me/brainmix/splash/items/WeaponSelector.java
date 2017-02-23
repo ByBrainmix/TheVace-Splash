@@ -15,7 +15,9 @@ import me.vicevice.general.api.games.utils.ItemUtils;
 import me.vicevice.general.api.games.utils.Message;
 import me.vicevice.general.api.inventory.SingleInventory;
 import org.bukkit.Bukkit;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -53,10 +55,10 @@ public class WeaponSelector extends CustomSplashItem implements Clickable {
             SplashPlayer player = game.getPlayer(owner);
 
             SplashItem.getWeapons().forEach(weapon -> {
-                ItemStack item = weapon.get();
+                ItemStack item = weapon.get().clone();
                 int slot = config.getInt(weapon.getPath() + ".slot", 1);
                 ItemMeta itemMeta = item.getItemMeta();
-                List<String> lore = new ArrayList<>();
+                List<String> lore = itemMeta.hasLore() ? itemMeta.getLore() : new ArrayList<>();
 
 
                 String hasBought = Utils.simpleColorFormat(config.getTranslated("Weapon.hasBought", owner, "&aDu besitzt dieses Item"));
@@ -64,12 +66,13 @@ public class WeaponSelector extends CustomSplashItem implements Clickable {
 
                 lore.add(weapon.hasBought(owner) ? hasBought : hasNotBought);
                 itemMeta.setLore(lore);
-                item.setItemMeta(itemMeta);
 
-                Bukkit.broadcastMessage("selectedWeapon: " + player.getSelectedWeapon() + " + weapon: " + weapon + " = " + (player.getSelectedWeapon() == weapon));
                 if(player.getSelectedWeapon() == weapon) {
-                    item = ItemUtils.addGlow(item);
+                    itemMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+                    itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                 }
+
+                item.setItemMeta(itemMeta);
 
                 set(slot, item, e -> {
 

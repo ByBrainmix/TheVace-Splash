@@ -4,7 +4,6 @@ import me.brainmix.itemapi.api.ItemOptions;
 import me.brainmix.itemapi.api.controllers.ItemHandler;
 import me.brainmix.itemapi.api.events.ItemRightClickBlockEvent;
 import me.brainmix.itemapi.api.interfaces.Clickable;
-import me.brainmix.splash.SplashPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -20,15 +19,6 @@ public class SplashRoller extends CustomSplashItem implements Clickable, Listene
     private int size;
     private Mobility mobility;
     private double damage;
-
-    public SplashRoller(String configName, int tintCost, int size, Mobility mobility, double damage) {
-        super(configName);
-        this.tintCost = tintCost;
-        this.size = size;
-        this.mobility = mobility;
-        this.damage = damage;
-        Bukkit.getPluginManager().registerEvents(this, game);
-    }
 
     public SplashRoller(String configName) {
         super(configName);

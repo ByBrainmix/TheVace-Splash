@@ -1,6 +1,7 @@
 package me.brainmix.splash;
 
 import me.brainmix.itemapi.api.ItemRegister;
+import me.brainmix.itemapi.api.controllers.ItemManager;
 import me.brainmix.splash.listeners.GameListener;
 import me.brainmix.splash.listeners.GameOptionsListener;
 import me.brainmix.splash.utils.BUtils;

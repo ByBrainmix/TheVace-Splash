@@ -31,17 +31,7 @@ public class SplashShooter extends CustomSplashItem implements Clickable, Shoota
     private double damage;
     private ClickSound clickSound;
     private ItemDelay itemDelay;
-
-
-    public SplashShooter(String configName, int tintCost, int fireRate, double velMulti, double damage, ClickSound clickSound, ItemDelay itemDelay) {
-        super(configName);
-        this.tintCost = tintCost;
-        this.fireRate = fireRate;
-        this.velMulti = velMulti;
-        this.damage = damage;
-        this.clickSound = clickSound;
-        this.itemDelay = itemDelay;
-    }
+    private int size;
 
     public SplashShooter(String configName) {
         super(configName);
@@ -51,6 +41,7 @@ public class SplashShooter extends CustomSplashItem implements Clickable, Shoota
         this.damage = config.getDouble(getPath() + "damage", 1.0);
         this.clickSound = BUtils.getSound(config, getPath() + "clickSound");
         this.itemDelay = BUtils.getItemDelay(config, getPath() + "itemDelay");
+        this.size = config.getInt(getPath() + "size", 3);
     }
 
     @Override
@@ -93,14 +84,25 @@ public class SplashShooter extends CustomSplashItem implements Clickable, Shoota
 
     @ItemHandler
     public void onHit(ItemProjectileHitEvent event) {
-        Location min = event.getProjectile().getLocation().add(-1, -1, -1);
-        Location max = min.clone().add(2, 2, 2);
-        game.paintArea(game.getPlayer(event.getPlayer()), min, max);
+        int r = (int) ((double) size - 1) / 2;
+        int x = (size - 1) % 2;
+
+        Location middle = event.getProjectile().getLocation();
+        Location min = new Location(middle.getWorld(), middle.getX() - (r+x), middle.getY() - (r+x), middle.getZ() - (r+x));
+        Location max = new Location(middle.getWorld(), middle.getX() + r, middle.getY() + r, middle.getZ() + r);
+        game.getCurrent().paintArea(game.getPlayer(event.getPlayer()), min, max);
     }
 
     @ItemHandler
     public void onHitPlayer(ItemProjectileHitPlayerEvent event) {
         game.getPlayer(event.getEntity()).hurt(damage, event.getPlayer());
+        int r = (int) ((double) size - 1) / 2;
+        int x = (size - 1) % 2;
+
+        Location middle = event.getProjectile().getLocation();
+        Location min = new Location(middle.getWorld(), middle.getX() - (r+x), middle.getY() - (r+x), middle.getZ() - (r+x));
+        Location max = new Location(middle.getWorld(), middle.getX() + r, middle.getY() + r, middle.getZ() + r);
+        game.getCurrent().paintArea(game.getPlayer(event.getPlayer()), min, max);
     }
 
 }

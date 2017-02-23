@@ -35,6 +35,7 @@ public class SplashPlayer extends AbstractPlayer {
     private SplashItem selectedWeapon = SplashItem.SPLATTERSHOT_JR;
     private WeaponSelectInventory weaponSelectInventory;
     private Mobility mobility = Mobility.NORMAL;
+    private boolean charging;
 
     public SplashPlayer(String name, ManageableGame game) {
         super(name, game);
@@ -53,8 +54,6 @@ public class SplashPlayer extends AbstractPlayer {
         ingameBoard.setBoard(getPlayer());
 
         addItem(selectedWeapon);
-        addItem(SplashItem.TEST_ITEM);
-        addItem(SplashItem.TEST_SHOOTER);
         setItem(SplashItem.MAP_RESETER, 8);
 
         updateItems();
@@ -69,6 +68,7 @@ public class SplashPlayer extends AbstractPlayer {
 
     public void onUpdate() {
         if(dead) return;
+        if(isCharging()) return;
         ColoredBlock block = game.getBlockAt(getPlayer().getLocation().add(0, -1, 0));
         ColoredBlock block2 = game.getBlockAt(getPlayer().getLocation().add(0, -2, 0));
 
@@ -219,6 +219,7 @@ public class SplashPlayer extends AbstractPlayer {
         BParticle.EXPLOSION_NORMAL.playAll(getPlayer().getLocation().add(0, 1, 0), true, 0.2, 0.5, 0.2, 0f, 4);
         BParticle.BLOCK_CRACK.playAll(getPlayer().getLocation().add(0, 1, 0), true, 0.3, 0.5, 0.3, 0.2f, 100, 152);
         getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, deathTime + 20, 128, false, false));
+        Bukkit.getScheduler().scheduleSyncDelayedTask(game, () -> getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, deathTime + 20, 128, false, false)), 1);
         getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, deathTime + 20, 255, false, false));
         getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WITHER, deathTime, 1, false, false));
         BUtils.sendTitle(getPlayer(), "Messages.deathMsg", "&cDu wurdest eliminiert", "%killer%", game.getPlayer(damager.getPlayer()).getName());
@@ -279,5 +280,13 @@ public class SplashPlayer extends AbstractPlayer {
 
     public void setMobility(Mobility mobility) {
         this.mobility = mobility;
+    }
+
+    public boolean isCharging() {
+        return charging;
+    }
+
+    public void setCharging(boolean charging) {
+        this.charging = charging;
     }
 }

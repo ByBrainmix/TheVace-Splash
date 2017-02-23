@@ -7,8 +7,6 @@ import me.brainmix.splash.item.SplashCharger;
 import me.brainmix.splash.item.SplashRoller;
 import me.brainmix.splash.item.SplashShooter;
 import me.brainmix.splash.items.MapReseter;
-import me.brainmix.splash.items.TestItem;
-import me.brainmix.splash.items.TestShooter;
 import me.brainmix.splash.items.WeaponSelector;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -20,8 +18,6 @@ import java.util.stream.Collectors;
 public enum SplashItem implements CustomItemEnum {
 
     //DEBUG:
-    TEST_ITEM(new TestItem(), false),
-    TEST_SHOOTER(new TestShooter(), false),
     MAP_RESETER(new MapReseter(), false),
 
     //LOBBY:
@@ -60,6 +56,7 @@ public enum SplashItem implements CustomItemEnum {
     }
 
     public static void disable() {
+
         for (SplashItem splashItem : values()) {
             splashItem.getCustomItem().getOptions().setDisabled(true);
         }
