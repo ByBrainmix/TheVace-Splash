@@ -2,13 +2,21 @@ package me.brainmix.splash;
 
 import com.google.common.collect.Lists;
 import me.brainmix.itemapi.api.utils.ItemUtils;
+import me.brainmix.splash.item.Mobility;
 import me.brainmix.splash.items.WeaponSelector.WeaponSelectInventory;
+import me.brainmix.splash.utils.BParticle;
 import me.brainmix.splash.utils.BUtils;
+import me.brainmix.splash.utils.BUtils.SoundWrapper;
 import me.brainmix.splash.utils.ColoredBlock;
 import me.vicevice.general.api.games.AbstractPlayer;
 import me.vicevice.general.api.games.interfaces.ManageableGame;
 import me.vicevice.general.api.games.utils.BScoreboard;
+import net.minecraft.server.v1_8_R3.PacketPlayOutAnimation;
+import net.minecraft.server.v1_8_R3.PacketPlayOutGameStateChange;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -22,9 +30,11 @@ public class SplashPlayer extends AbstractPlayer {
     private double tint = 100;
     private boolean isSneaking;
     private double health = 20;
+    private boolean dead;
     private boolean joinedAsSpectator;
     private SplashItem selectedWeapon = SplashItem.SPLATTERSHOT_JR;
     private WeaponSelectInventory weaponSelectInventory;
+    private Mobility mobility = Mobility.NORMAL;
 
     public SplashPlayer(String name, ManageableGame game) {
         super(name, game);
@@ -58,6 +68,7 @@ public class SplashPlayer extends AbstractPlayer {
     }
 
     public void onUpdate() {
+        if(dead) return;
         ColoredBlock block = game.getBlockAt(getPlayer().getLocation().add(0, -1, 0));
         ColoredBlock block2 = game.getBlockAt(getPlayer().getLocation().add(0, -2, 0));
 
@@ -78,6 +89,13 @@ public class SplashPlayer extends AbstractPlayer {
             if(isInvisible()) setVisible();
             getPlayer().removePotionEffect(PotionEffectType.SPEED);
             if(isSneaking()) setSneaking(false);
+            switch (mobility) {
+                case FAST:
+                   getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 1000000, 1, false, false));
+                    break;
+                case SLOW:
+                    getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 1000000, 1, false, false));
+            }
         }
 
         // being over other team colored block
@@ -85,6 +103,13 @@ public class SplashPlayer extends AbstractPlayer {
             getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 35, 3, false, false));
         } else {
             getPlayer().removePotionEffect(PotionEffectType.SLOW);
+            switch (mobility) {
+                case FAST:
+                    getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 1000000, 1, false, false));
+                    break;
+                case SLOW:
+                    getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 1000000, 1, false, false));
+            }
         }
 
     }
@@ -169,19 +194,51 @@ public class SplashPlayer extends AbstractPlayer {
         return false;
     }
 
-    public void hurt(double damage) {
+    public void hurt(double damage, Player damager) {
+        if(dead) return;
+        if(isSpectator()) return;
         health -= damage;
+        BParticle.BLOCK_CRACK.playAll(getPlayer().getLocation().add(0, 1, 0), true, 0.3, 0.5, 0.3, 0.2f, 20, 152);
+        PacketPlayOutAnimation packet = new PacketPlayOutAnimation(((CraftPlayer) getPlayer()).getHandle(), 1);
+        Bukkit.getOnlinePlayers().forEach(p -> ((CraftPlayer) p).getHandle().playerConnection.sendPacket(packet));
+        getPlayer().playSound(getPlayer().getLocation(), Sound.HURT_FLESH, 1, 1);
+
         if(health <= 0) {
-            kill();
+            kill(damager);
             return;
         }
+        BUtils.playSound(getPlayer(), game.getGameConfig(), "Sounds.damage", new SoundWrapper(Sound.BLAZE_HIT, 1, 1));
         getPlayer().setHealth(health);
     }
 
-    public void kill() {
+    public void kill(Player damager) {
+        int deathTime = game.getGameConfig().getInt("Settings.deathTime", 80);
+        dead = true;
         health = 20;
-        getPlayer().setHealth(0);
         getPlayer().setHealth(health);
+        BParticle.EXPLOSION_NORMAL.playAll(getPlayer().getLocation().add(0, 1, 0), true, 0.2, 0.5, 0.2, 0f, 4);
+        BParticle.BLOCK_CRACK.playAll(getPlayer().getLocation().add(0, 1, 0), true, 0.3, 0.5, 0.3, 0.2f, 100, 152);
+        getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, deathTime + 20, 128, false, false));
+        getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.JUMP, deathTime + 20, 255, false, false));
+        getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.WITHER, deathTime, 1, false, false));
+        BUtils.sendTitle(getPlayer(), "Messages.deathMsg", "&cDu wurdest eliminiert", "%killer%", game.getPlayer(damager.getPlayer()).getName());
+        int deathState = game.getGameConfig().getInt("Death.deathState", 7);
+        float deathValue = (float) game.getGameConfig().getDouble("Death.deathvalue", 1);
+        int respawnState = game.getGameConfig().getInt("Death.respawnState", 1);
+        float respawnValue = (float) game.getGameConfig().getDouble("Death.respawnValue", 0);
+        BUtils.playSound(getPlayer(), game.getGameConfig(), "Sounds.death", new SoundWrapper(Sound.BLAZE_DEATH, 1, 1));
+        PacketPlayOutGameStateChange packet = new PacketPlayOutGameStateChange(deathState, deathValue);
+        ((CraftPlayer) getPlayer()).getHandle().playerConnection.sendPacket(packet);
+
+        Bukkit.getOnlinePlayers().forEach(p -> p.hidePlayer(getPlayer()));
+        Bukkit.getScheduler().scheduleSyncDelayedTask(game, () -> {
+            dead = false;
+            getPlayer().teleport(getTeam().getTeamSpawn());
+            tint = game.getGameConfig().getInt("Settings.tintAfterDeath", 50);
+            Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(getPlayer()));
+            PacketPlayOutGameStateChange packet2 = new PacketPlayOutGameStateChange(respawnState, respawnValue);
+            ((CraftPlayer) getPlayer()).getHandle().playerConnection.sendPacket(packet2);
+        }, deathTime);
     }
 
     public boolean isSneaking() {
@@ -190,14 +247,6 @@ public class SplashPlayer extends AbstractPlayer {
 
     public void setSneaking(boolean sneaking) {
         isSneaking = sneaking;
-    }
-
-    public double getHealth() {
-        return health;
-    }
-
-    public void setHealth(double health) {
-        this.health = health;
     }
 
     public boolean isJoinedAsSpectator() {
@@ -218,5 +267,17 @@ public class SplashPlayer extends AbstractPlayer {
 
     public WeaponSelectInventory getWeaponSelectInventory() {
         return weaponSelectInventory;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public Mobility getMobility() {
+        return mobility;
+    }
+
+    public void setMobility(Mobility mobility) {
+        this.mobility = mobility;
     }
 }

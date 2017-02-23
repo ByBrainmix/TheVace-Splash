@@ -66,6 +66,7 @@ public class WeaponSelector extends CustomSplashItem implements Clickable {
                 itemMeta.setLore(lore);
                 item.setItemMeta(itemMeta);
 
+                Bukkit.broadcastMessage("selectedWeapon: " + player.getSelectedWeapon() + " + weapon: " + weapon + " = " + (player.getSelectedWeapon() == weapon));
                 if(player.getSelectedWeapon() == weapon) {
                     item = ItemUtils.addGlow(item);
                 }

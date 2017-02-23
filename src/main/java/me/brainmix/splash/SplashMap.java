@@ -6,6 +6,7 @@ import me.vicevice.general.api.games.AbstractMap;
 import me.vicevice.general.api.games.interfaces.ManageableGame;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Biome;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,7 +35,7 @@ public class SplashMap extends AbstractMap {
         for(double x = minMapLocation.getX(); x <= maxMapLocation.getX(); x++) {
             for(double y = minMapLocation.getY(); y <= maxMapLocation.getY(); y++) {
                 for(double z = minMapLocation.getZ(); z <= maxMapLocation.getZ(); z++) {
-
+                    getBukkitWorld().setBiome((int) x, (int) z, Biome.DESERT);
                     Location loc = new Location(getBukkitWorld(), x, y, z);
                     if(canbeColored.contains(loc.getBlock().getType())) {
                         coloredBlocks.add(new ColoredBlock(loc));

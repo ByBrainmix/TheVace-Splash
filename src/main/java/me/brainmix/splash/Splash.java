@@ -12,6 +12,7 @@ import me.vicevice.general.api.games.GameState;
 import me.vicevice.general.api.games.TeamGame;
 import me.vicevice.general.api.games.events.GameSendPlayersEvent;
 import me.vicevice.general.api.games.interfaces.GameOptions;
+import net.minecraft.server.v1_8_R3.PacketPlayOutGameStateChange;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 
@@ -97,6 +98,7 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
             getPlayer(p).setSpectator();
             getPlayer(p).setJoinedAsSpectator(true);
         }
+        p.removeAchievement(Achievement.THE_END);
     }
 
     public void onEnd() {
@@ -107,7 +109,8 @@ public class Splash extends TeamGame<SplashPlayer, SplashMap, SplashTeam> {
             teamWins(team1.getPercentage() > team2.getPercentage() ? team1 : team2);
         }
         SplashItem.disable();
-
+        getCurrent().clearMap();
+        Bukkit.getOnlinePlayers().forEach(p -> p.awardAchievement(Achievement.THE_END));
     }
 
     private void noTeamWins() {

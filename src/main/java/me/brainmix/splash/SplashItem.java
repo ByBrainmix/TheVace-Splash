@@ -70,8 +70,9 @@ public enum SplashItem implements CustomItemEnum {
     }
 
     public boolean hasBought(Player player) {
-        if(this == SplashItem.SPLATTERSHOT_JR) return true;
-        return Splash.a().getPlayer(player).getUser().getBoughtAmount("splash." + ((CustomSplashItem) customItem).getConfigName()) != 0;
+        return true;
+        //if(this == SplashItem.SPLATTERSHOT_JR) return true;
+        //return Splash.a().getPlayer(player).getUser().getBoughtAmount("splash." + ((CustomSplashItem) customItem).getConfigName()) != 0;
     }
 
     public String getPath() {
